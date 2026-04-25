@@ -2,30 +2,28 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Sistema de generación de NPCs basado en la barra emocional
-/// Controla la cantidad de NPCs buenos, neutros y malos según el valor emocional
-/// </summary>
+//Conectar con el script de la barra emocional al final para que pueda funcionar dependiendo de ella
+//Crear los NPCS de cada tipo como prefabs con características 
 public class NPCSpawner : MonoBehaviour
 {
-    [Header("Configuración General")]
+   //Configuracion general
     [SerializeField] private GameObject npcPrefabGood;
     [SerializeField] private GameObject npcPrefabNeutral;
     [SerializeField] private GameObject npcPrefabBad;
-    [SerializeField] private int totalNPCsPerScene = 20;
+    [SerializeField] private int totalNPCsPerScene = 20; //mas o menos
     
-    [Header("Emotion System Reference")]
+    //Configuracion barra emocional 1: declarar si no se encuentra para notificar del fallo del script
     [SerializeField] private EmotionSystem emotionSystem;
     
     private Dictionary<string, GameObject> npcsSpawned = new Dictionary<string, GameObject>();
     
     void Awake()
     {
-        // Referencia al sistema emocional si no se conecta por inspector
+        // Referencia al sistema emocional si no se conecta por inspec tor
         if (emotionSystem == null)
         {
             // Intentar encontrar en la escena
-            emotionSystem = FindObjectOfType<EmotionSystem>();
+            emotionSystem = FindObjectOfType<EmotionSystem>(); //Conexion con la barra emocional
         }
         
         if (npcPrefabGood == null || npcPrefabNeutral == null || npcPrefabBad == null)
@@ -34,10 +32,10 @@ public class NPCSpawner : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Se llama cuando se activa una nueva escena de exploración
-    /// </summary>
-    public void SpawnNPCsBasedOnEmotion(float emotionValue)
+    
+    /// Funcion que establece la llamada a este script solo al entrar en una escena de exploración y dependiente de emotionValue
+    
+    public void SpawnNPCsBasedOnEmotion(float emotionValue) 
     {
         if (emotionSystem == null)
         {
@@ -56,8 +54,8 @@ public class NPCSpawner : MonoBehaviour
         if (emotionValue >= 61 && emotionValue <= 100) // Éxtasis
         {
             // 50% buenos, 50% malos, sin neutros
-            goodNPCs = (int)(totalNPCsPerScene * 0.25f);   // 25% de la escena
-            badNPCs = (int)(totalNPCsPerScene * 0.75f);     // 75% de la escena (50% de 100%)
+            goodNPCs = (int)(totalNPCsPerScene * 0.50f);   // 50% de la escena
+            badNPCs = (int)(totalNPCsPerScene * 0.50f);     // 50% de la escena (50% de 100%)
         }
         else if (emotionValue >= 31 && emotionValue <= 61) // Nivel medio
         {
@@ -70,10 +68,10 @@ public class NPCSpawner : MonoBehaviour
         else // 0-30 (Nivel bajo)
         {
             // 60% malos, 40% restantes entre neutros y buenos
-            badNPCs = (int)(totalNPCsPerScene * 0.6f);
+            badNPCs = (int)(totalNPCsPerScene * 0.7f);
             int remaining = totalNPCsPerScene - badNPCs;
-            goodNPCs = remaining / 3;
-            neutralNPCs = remaining - goodNPCs;
+            neutralNPCs = remaining / 3;
+            goodNPCs = remaining - neutralNPCs;
         }
         
         // Ajustar para que sumen exactamente totalNPCsPerScene
@@ -88,9 +86,9 @@ public class NPCSpawner : MonoBehaviour
         Debug.Log($"[NPCSpawner] Emotion: {emotionValue:F0}% | Spawned: {goodNPCs} Good, {neutralNPCs} Neutral, {badNPCs} Bad (Total: {totalNPCsPerScene})");
     }
     
-    /// <summary>
-    /// Ajusta los conteos para que sumen exactamente totalNPCsPerScene
-    /// </summary>
+
+    /// Funciones que sirven para asegurar que el total es siempre el establecido en el totalNPCsPerScene
+
     private void AdjustNPCCounts(int good, int neutral, int bad)
     {
         int currentTotal = good + neutral + bad;
@@ -136,9 +134,9 @@ public class NPCSpawner : MonoBehaviour
         }
     }
     
-    /// <summary>
+  
     /// Spawnea la cantidad especificada de NPCs
-    /// </summary>
+    
     private void SpawnNPCs(int count, GameObject prefab, string type)
     {
         if (prefab == null || count <= 0) return;
@@ -173,9 +171,9 @@ public class NPCSpawner : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Establece una posición aleatoria para el NPC
-    /// </summary>
+     
+    /// Establece una posición aleatoria para el NPC: peremitida en todo el mapa
+    
     private void SetRandomPosition(GameObject npc)
     {
         float randomX = Random.Range(-10f, 10f);
@@ -183,12 +181,13 @@ public class NPCSpawner : MonoBehaviour
         float randomZ = Random.Range(-10f, 10f);
         
         npc.transform.position = new Vector3(randomX, randomY, randomZ);
-        
-        // Opcional: Limitar a un área específica
+
+        //Limitada a una area especifica estableciendo unas coordenadas como "GetValidSpawnPosition"
+       
         // npc.transform.position = GetValidSpawnPosition(npc.transform.position);
     }
     
-    /// <summary>
+  
     /// Limpia todos los NPCs existentes
     /// </summary>
     private void ClearNPCs()
@@ -206,9 +205,9 @@ public class NPCSpawner : MonoBehaviour
         npCsSpawned.Clear();
     }
     
-    /// <summary>
+    
     /// Método para que el EmotionSystem pueda notificar cambios
-    /// </summary>
+ 
     public void OnEmotionChanged(float newEmotionValue)
     {
         // Solo regenerar NPCs si estamos en una nueva escena de exploración
@@ -216,18 +215,19 @@ public class NPCSpawner : MonoBehaviour
     }
 }
 
-/// <summary>
 /// Interface simple para el sistema emocional (si no existe, crearlo aparte)
-/// </summary>
-public class EmotionSystem : MonoBehaviour
+
+public class //NombreScriptBarrraEmocionalEmotionSystem : MonoBehaviour
 {
-    public float emotionValue { get; set; } = 50f;
+    public float // Funcion de Barra emocional qe imprime el emotionValue { get; set; } = 50f;
     public event System.Action<float> OnEmotionChanged;
     
     public void SetEmotion(float value)
     {
         emotionValue = Mathf.Clamp01(value) * 100f; // 0-100
         OnEmotionChanged?.Invoke(emotionValue);
+        //Esto establece los intérvalos para que tanto la barra, el gestor del color y el creador de NPCs sepa los valores
+        //de cada emocion
     }
     
     public float GetEmotion()
@@ -237,7 +237,4 @@ public class EmotionSystem : MonoBehaviour
 }
 ```
 
-```tool
-TOOL_NAME: read_file
-BEGIN_ARG: filepath
-"UNITY/NPCs/NPCBehaviour.cs"
+``

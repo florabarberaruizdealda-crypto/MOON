@@ -1,0 +1,62 @@
+#include <WiFi.h>
+#endif
+#include <WiFiUdp.h>
+#include <OSCMessage.h>
+
+const char* ssid = "GL-AR300M-7ac-NOR";  
+const char* pass = "";                  
+
+WiFiUDP Udp;
+const IPAddress outIp(192, 168, 8, 199);  //IP de l'ordinador al que us voleu connectar. És molt important que l'ordinador estigui connectar a la xarxa que toca per poder veure la adreça i que sigui la que toca.
+const unsigned int outPort = 9999;        //Port de l'ordinador. L'ESP busca aquest port per enviar els missatges.
+const unsigned int localPort = 8888;    
+
+//CODIGO MOVIMIENTO
+void loop() {
+
+  if (touchRead(touchLeft) < touchThreshold) {
+    OSCMessage msg("/moon/move");
+    msg.add(0);
+    Udp.beginPacket(outIp, outPort);
+    msg.send(Udp);
+    Udp.endPacket();
+    msg.empty();
+    Serial.println("LEFT");
+    delay(100); // evita que mande 50 mensajes por segundo
+  }
+
+  else if (touchRead(touchRight) < touchThreshold) {
+    OSCMessage msg("/moon/move");
+    msg.add(1);
+    Udp.beginPacket(outIp, outPort);
+    msg.send(Udp);
+    Udp.endPacket();
+    msg.empty();
+    Serial.println("RIGHT");
+    delay(100);
+  }
+
+  else if (touchRead(touchUp) < touchThreshold) {
+    OSCMessage msg("/moon/move");
+    msg.add(2);
+    Udp.beginPacket(outIp, outPort);
+    msg.send(Udp);
+    Udp.endPacket();
+    msg.empty();
+    Serial.println("UP");
+    delay(100);
+  }
+
+  else if (touchRead(touchDown) < touchThreshold) {
+    OSCMessage msg("/moon/move");
+    msg.add(3);
+    Udp.beginPacket(outIp, outPort);
+    msg.send(Udp);
+    Udp.endPacket();
+    msg.empty();
+    Serial.println("DOWN");
+    delay(100);
+  }
+
+  delay(20);
+}

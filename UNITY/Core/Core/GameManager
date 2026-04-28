@@ -1,0 +1,76 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+/// <summary>
+/// GameManager — UI emocional y puente hacia OSCManager.
+///
+/// SETUP:
+///   - Slider min=0, max=100, wholeNumbers=false
+///   - Arrastra fillImage desde la jerarquía del Slider
+///   - labelEstado opcional
+/// </summary>
+public class GameManager : MonoBehaviour
+{
+    public static GameManager Instance { get; private set; }
+
+    [Header("UI")]
+    public Slider barraEmocional;
+    public Text   labelEstado;
+    public Image  fillImage;
+
+    // Nombres de los 5 estados para el label
+    private static readonly string[] NOMBRES_ESTADO = {
+        "", "Extreme Anxiety", "Moderate Anxiety", "Neutral", "Moderate Euphoria", "Extreme Euphoria"
+    };
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
+    void Start()
+    {
+        barraEmocional.minValue     = 0f;
+        barraEmocional.maxValue     = 100f;
+        barraEmocional.wholeNumbers = false;
+        OnEmotionChanged(EmotionManager.Instance != null ? EmotionManager.Instance.GetValor() : 50f);
+    }
+
+    /// Llamado por EmotionManager cada vez que el valor cambia
+    public void OnEmotionChanged(float valor)
+    {
+        // Actualizar slider
+        if (barraEmocional != null)
+            barraEmocional.value = valor;
+
+        // Estado 1–5
+        int estado = EmotionManager.Instance != null ? EmotionManager.Instance.GetEstado() : 3;
+
+        // Actualizar color del fill
+        ActualizarVisual(estado);
+
+        // Actualizar label
+        if (labelEstado != null && estado >= 1 && estado <= 5)
+            labelEstado.text = NOMBRES_ESTADO[estado];
+
+        // Enviar emoción normalizada al ESP32
+        OSCManager.Instance?.SendEmotion(valor / 100f);
+
+        Debug.Log($"[GameManager] Emoción: {valor:F1} — Estado {estado}: {NOMBRES_ESTADO[estado]}");
+    }
+
+    void ActualizarVisual(int estado)
+    {
+        if (fillImage == null) return;
+        switch (estado)
+        {
+            case 1: fillImage.color = new Color(0.9f, 0.1f, 0.1f); break;  // Rojo
+            case 2: fillImage.color = new Color(0.9f, 0.5f, 0.1f); break;  // Naranja
+            case 3: fillImage.color = new Color(0.9f, 0.9f, 0.9f); break;  // Blanco
+            case 4: fillImage.color = new Color(0.2f, 0.4f, 0.9f); break;  // Azul
+            case 5: fillImage.color = new Color(0.6f, 0.1f, 0.9f); break;  // Neon
+        }
+    }
+}
